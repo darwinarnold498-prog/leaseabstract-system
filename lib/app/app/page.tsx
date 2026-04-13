@@ -13,9 +13,7 @@ export default function Home() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem("access_granted") === "true") {
-      setUnlocked(true);
-    }
+    if (localStorage.getItem("access_granted") === "true") setUnlocked(true);
   }, []);
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
@@ -32,8 +30,7 @@ export default function Home() {
     setValidating(false);
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpload = async () => {
     if (!file) return;
     setLoading(true);
     setError("");
@@ -80,7 +77,7 @@ export default function Home() {
     <main className="min-h-screen bg-zinc-950 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">LeaseAbstract AI ✅ Unlocked</h1>
-        <form onSubmit={handleUpload} className="border-2 border-dashed border-zinc-700 rounded-3xl p-12 text-center">
+        <div className="border-2 border-dashed border-zinc-700 rounded-3xl p-12 text-center">
           <input 
             type="file" 
             accept=".pdf" 
@@ -92,14 +89,14 @@ export default function Home() {
             <div className="text-7xl mb-6">📄</div>
             <p className="text-2xl">{file ? file.name : "Drop lease PDF here"}</p>
           </label>
-          <button
-            type="submit"
-            disabled={loading || !file}
-            className="mt-8 w-full py-7 bg-emerald-500 text-black text-2xl font-semibold rounded-3xl"
-          >
-            {loading ? "Analyzing with Gemini..." : "Analyze Lease"}
-          </button>
-        </form>
+        </div>
+        <button
+          onClick={handleUpload}
+          disabled={loading || !file}
+          className="mt-8 w-full py-7 bg-emerald-500 text-black text-2xl font-semibold rounded-3xl"
+        >
+          {loading ? "Analyzing with Gemini..." : "Analyze Lease"}
+        </button>
         {error && <p className="text-red-400 mt-6 text-center">{error}</p>}
         {result && (
           <pre className="mt-12 bg-black p-6 rounded-3xl text-sm overflow-auto">
