@@ -13,7 +13,9 @@ export default function Home() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (document.cookie.includes("access_granted=true")) setUnlocked(true);
+    if (localStorage.getItem("access_granted") === "true") {
+      setUnlocked(true);
+    }
   }, []);
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
@@ -21,8 +23,12 @@ export default function Home() {
     setValidating(true);
     setError("");
     const res = await validateAccessCode(code);
-    if (res.success) setUnlocked(true);
-    else setError(res.message);
+    if (res.success) {
+      localStorage.setItem("access_granted", "true");
+      setUnlocked(true);
+    } else {
+      setError(res.message);
+    }
     setValidating(false);
   };
 
