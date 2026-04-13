@@ -2,7 +2,6 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createServerClient } from "@/lib/supabase";
-import { cookies } from "next/headers";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -17,28 +16,16 @@ export async function validateAccessCode(code: string) {
 
   if (!data) return { success: false, message: "Invalid or already used code" };
 
+  // Mark code as used
   await serverSupabase
     .from("licenses")
     .update({ redeemed_at: new Date().toISOString() })
     .eq("id", data.id);
 
-  const cookieStore = cookies();
-  cookieStore.set("access_granted", "true", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 365,
-    path: "/"
-  });
-
   return { success: true };
 }
 
 export async function analyzeLease(formData: FormData) {
-  const cookieStore = cookies();
-  if (cookieStore.get("access_granted")?.value !== "true") {
-    throw new Error("Access not granted. Enter your Gumroad code first.");
-  }
-
   const file = formData.get("file") as File;
   if (!file || !file.name.endsWith(".pdf")) throw new Error("Valid PDF required");
 
@@ -75,7 +62,6 @@ export async function analyzeLease(formData: FormData) {
     analysis = { error: "JSON parse failed", raw: result.response.text() };
   }
 
-  // Save analysis only (no storage needed)
   const serverSupabase = createServerClient();
   await serverSupabase.from("lease_analyses").insert({ filename: file.name, analysis });
 
