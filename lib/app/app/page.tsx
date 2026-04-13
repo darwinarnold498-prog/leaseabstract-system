@@ -54,13 +54,13 @@ export default function Home() {
         <div className="max-w-md w-full text-center">
           <h1 className="text-5xl font-bold mb-4">LeaseAbstract AI</h1>
           <p className="text-xl text-zinc-400 mb-12">Enter your Gumroad access code</p>
-          <form onSubmit={handleCodeSubmit}>
+          <form onSubmit={handleCodeSubmit} className="space-y-6">
             <input
               type="text"
               placeholder="XXXX-YYYY-ZZZZ"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-8 py-6 text-2xl text-center mb-6"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-8 py-6 text-2xl text-center"
             />
             <button
               type="submit"
@@ -81,21 +81,31 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">LeaseAbstract AI ✅ Unlocked</h1>
         <form onSubmit={handleUpload} className="border-2 border-dashed border-zinc-700 rounded-3xl p-12 text-center">
-          <input type="file" accept=".pdf" onChange={(e) => e.target.files && setFile(e.target.files[0])} className="hidden" id="file" />
+          <input 
+            type="file" 
+            accept=".pdf" 
+            onChange={(e) => e.target.files && setFile(e.target.files[0])} 
+            className="hidden" 
+            id="file" 
+          />
           <label htmlFor="file" className="cursor-pointer block">
             <div className="text-7xl mb-6">📄</div>
             <p className="text-2xl">{file ? file.name : "Drop lease PDF here"}</p>
           </label>
+          <button
+            type="submit"
+            disabled={loading || !file}
+            className="mt-8 w-full py-7 bg-emerald-500 text-black text-2xl font-semibold rounded-3xl"
+          >
+            {loading ? "Analyzing with Gemini..." : "Analyze Lease"}
+          </button>
         </form>
-        <button
-          onClick={handleUpload as any}
-          disabled={loading || !file}
-          className="mt-8 w-full py-7 bg-emerald-500 text-black text-2xl font-semibold rounded-3xl"
-        >
-          {loading ? "Analyzing with Gemini..." : "Analyze Lease"}
-        </button>
-        {error && <p className="text-red-400 mt-6">{error}</p>}
-        {result && <pre className="mt-12 bg-black p-6 rounded-3xl text-sm overflow-auto">{JSON.stringify(result, null, 2)}</pre>}
+        {error && <p className="text-red-400 mt-6 text-center">{error}</p>}
+        {result && (
+          <pre className="mt-12 bg-black p-6 rounded-3xl text-sm overflow-auto">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        )}
       </div>
     </main>
   );
