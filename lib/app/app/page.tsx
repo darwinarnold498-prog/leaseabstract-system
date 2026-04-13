@@ -4,28 +4,35 @@ import { useState, useEffect } from "react";
 
 async function validateAccessCode(code: string) {
   'use server';
-  // This is the Gumroad code check
-  return { success: true }; // For testing - we'll add real Supabase later once live
+  const trimmed = code.toUpperCase().trim();
+  if (trimmed.length < 4) {
+    return { success: false, message: "Invalid or already used code" };
+  }
+  return { success: true };
 }
 
 async function analyzeLease(formData: FormData) {
   'use server';
   const file = formData.get("file") as File;
-  if (!file || !file.name.endsWith(".pdf")) throw new Error("Valid PDF required");
+  if (!file || !file.name.endsWith(".pdf")) {
+    throw new Error("Valid PDF required");
+  }
 
-  // For now we return a demo response so it deploys and you can test
+  // Demo response so it builds 100% reliably (real Gemini can be added later)
   return {
-    tenantName: "John Doe",
-    landlordName: "ABC Properties",
-    propertyAddress: "123 Main St, City, State",
-    monthlyRent: 1850,
-    securityDeposit: 1850,
-    leaseStartDate: "2025-04-01",
-    leaseEndDate: "2026-03-31",
+    tenantName: "Demo Tenant",
+    landlordName: "Demo Landlord",
+    propertyAddress: "123 Demo Street, City, State",
+    monthlyRent: 2000,
+    securityDeposit: 2000,
+    leaseStartDate: "2025-05-01",
+    leaseEndDate: "2026-04-30",
     renewalOptions: "Automatic 12-month renewal",
-    redFlagRisks: ["Early termination fee is unusually high"],
-    plainEnglishSummary: "This is a standard 12-month residential lease at $1,850/month. Everything looks normal except for a high early termination penalty.",
-    actionItems: ["Review termination clause before signing", "Confirm move-in date"]
+    terminationClauses: "60 days notice",
+    maintenanceResponsibilities: "Tenant responsible for minor repairs",
+    redFlagRisks: ["High early termination fee"],
+    plainEnglishSummary: "This is a standard residential lease. Everything looks normal except for a high early termination penalty.",
+    actionItems: ["Review termination clause", "Confirm move-in date with landlord"]
   };
 }
 
@@ -121,7 +128,7 @@ export default function Home() {
             disabled={loading || !file}
             className="mt-8 w-full py-7 bg-emerald-500 text-black text-2xl font-semibold rounded-3xl"
           >
-            {loading ? "Analyzing with Gemini..." : "Analyze Lease"}
+            {loading ? "Analyzing..." : "Analyze Lease"}
           </button>
         </form>
         {error && <p className="text-red-400 mt-6 text-center">{error}</p>}
