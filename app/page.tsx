@@ -1,33 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-
-async function validateAccessCode(code: string) {
-  'use server';
-  const trimmed = code.toUpperCase().trim();
-  if (trimmed.length < 4) return { success: false, message: "Invalid or already used code" };
-  return { success: true };
-}
-
-async function analyzeLease(formData: FormData) {
-  'use server';
-  const file = formData.get("file") as File;
-  if (!file || !file.name.endsWith(".pdf")) throw new Error("Valid PDF required");
-
-  return {
-    tenantName: "Demo Tenant",
-    landlordName: "Demo Landlord",
-    propertyAddress: "123 Demo Street",
-    monthlyRent: 2000,
-    securityDeposit: 2000,
-    leaseStartDate: "2025-05-01",
-    leaseEndDate: "2026-04-30",
-    renewalOptions: "Automatic 12-month renewal",
-    redFlagRisks: ["High early termination fee"],
-    plainEnglishSummary: "Standard residential lease. High early termination penalty noted.",
-    actionItems: ["Review termination clause", "Confirm move-in date"]
-  };
-}
+import { validateAccessCode, analyzeLease } from "./actions";
 
 export default function Home() {
   const [unlocked, setUnlocked] = useState(false);
@@ -105,7 +79,13 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">LeaseAbstract AI ✅ Unlocked</h1>
         <form onSubmit={handleUpload} className="border-2 border-dashed border-zinc-700 rounded-3xl p-12 text-center">
-          <input type="file" accept=".pdf" onChange={(e) => e.target.files && setFile(e.target.files[0])} className="hidden" id="file" />
+          <input 
+            type="file" 
+            accept=".pdf" 
+            onChange={(e) => e.target.files && setFile(e.target.files[0])} 
+            className="hidden" 
+            id="file" 
+          />
           <label htmlFor="file" className="cursor-pointer block">
             <div className="text-7xl mb-6">📄</div>
             <p className="text-2xl">{file ? file.name : "Drop lease PDF here"}</p>
@@ -115,11 +95,15 @@ export default function Home() {
             disabled={loading || !file}
             className="mt-8 w-full py-7 bg-emerald-500 text-black text-2xl font-semibold rounded-3xl"
           >
-            {loading ? "Analyzing..." : "Analyze Lease"}
+            {loading ? "Analyzing with Gemini..." : "Analyze Lease"}
           </button>
         </form>
         {error && <p className="text-red-400 mt-6 text-center">{error}</p>}
-        {result && <pre className="mt-12 bg-black p-6 rounded-3xl text-sm overflow-auto">{JSON.stringify(result, null, 2)}</pre>}
+        {result && (
+          <pre className="mt-12 bg-black p-6 rounded-3xl text-sm overflow-auto">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        )}
       </div>
     </main>
   );
