@@ -43,10 +43,6 @@ export async function analyzeLease(formData: FormData) {
   if (!file || !file.name.endsWith(".pdf")) throw new Error("Valid PDF required");
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const serverSupabase = createServerClient();
-
-  const fileName = `${Date.now()}-${file.name}`;
-  await serverSupabase.storage.from("leases").upload(fileName, buffer, { contentType: "application/pdf" });
 
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -79,6 +75,8 @@ export async function analyzeLease(formData: FormData) {
     analysis = { error: "JSON parse failed", raw: result.response.text() };
   }
 
+  // Save analysis only (no storage needed)
+  const serverSupabase = createServerClient();
   await serverSupabase.from("lease_analyses").insert({ filename: file.name, analysis });
 
   return analysis;
