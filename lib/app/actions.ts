@@ -1,28 +1,18 @@
 'use server';
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createServerClient } from "@/lib/supabase";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
+// ←←← YOUR UNIVERSAL CODE (change this if you want)
+const UNIVERSAL_CODE = "LEASEABSTRACT2026";
+
 export async function validateAccessCode(code: string) {
-  const serverSupabase = createServerClient();
-  const { data } = await serverSupabase
-    .from("licenses")
-    .select("id")
-    .eq("code", code.toUpperCase().trim())
-    .is("redeemed_at", null)
-    .single();
-
-  if (!data) return { success: false, message: "Invalid or already used code" };
-
-  // Mark code as used
-  await serverSupabase
-    .from("licenses")
-    .update({ redeemed_at: new Date().toISOString() })
-    .eq("id", data.id);
-
-  return { success: true };
+  const trimmed = code.toUpperCase().trim();
+  if (trimmed === UNIVERSAL_CODE) {
+    return { success: true };
+  }
+  return { success: false, message: "Invalid code" };
 }
 
 export async function analyzeLease(formData: FormData) {
@@ -61,9 +51,6 @@ export async function analyzeLease(formData: FormData) {
   } catch {
     analysis = { error: "JSON parse failed", raw: result.response.text() };
   }
-
-  const serverSupabase = createServerClient();
-  await serverSupabase.from("lease_analyses").insert({ filename: file.name, analysis });
 
   return analysis;
 }
