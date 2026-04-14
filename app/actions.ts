@@ -6,21 +6,22 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function validateAccessCode(code: string) {
   const trimmed = code.toUpperCase().trim();
-  if (trimmed.length < 4) {
-    return { success: false, message: "Invalid or already used code" };
+  if (trimmed === "LEASEABSTRACT2026") {
+    return { success: true };
   }
-  return { success: true };
+  return { success: false, message: "Invalid code" };
 }
 
 export async function analyzeLease(formData: FormData) {
-  const file = formData.get("file") as File;
-  if (!file || !file.name.endsWith(".pdf")) throw new Error("Valid PDF required");
+  try {
+    const file = formData.get("file") as File;
+    if (!file || !file.name.endsWith(".pdf")) throw new Error("Valid PDF required");
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const prompt = `You are an expert real estate attorney. Extract from this lease PDF and return ONLY valid JSON:
+    const prompt = `You are an expert real estate attorney. Extract from this lease PDF and return ONLY valid JSON:
 {
   "tenantName": string,
   "landlordName": string,
@@ -37,17 +38,22 @@ export async function analyzeLease(formData: FormData) {
   "actionItems": string[]
 }`;
 
-  const result = await model.generateContent([
-    { inlineData: { data: buffer.toString("base64"), mimeType: "application/pdf" } },
-    { text: prompt }
-  ]);
+    const result = await model.generateContent([
+      { inlineData: { data: buffer.toString("base64"), mimeType: "application/pdf" } },
+      { text: prompt }
+    ]);
 
-  let analysis;
-  try {
-    analysis = JSON.parse(result.response.text().trim());
-  } catch {
-    analysis = { error: "JSON parse failed", raw: result.response.text() };
+    let analysis;
+    try {
+      analysis = JSON.parse(result.response.text().trim());
+    } catch {
+      analysis = { error: "JSON parse failed", raw: result.response.text() };
+    }
+
+    return analysis;
+
+  } catch (err: any) {
+    // This will show the real error so we can debug
+    return { error: err.message || "Unknown error", fullError: String(err) };
   }
-
-  return analysis;
 }
